@@ -17,7 +17,7 @@ const ibmPlexSansThai = IBM_Plex_Sans_Thai({
 })
 
 export const metadata: Metadata = {
-  title: "Sophia & James Wedding | งานแต่งงาน",
+  title: "Sosi & Keng Wedding | งานแต่งงาน",
   description: "เชิญร่วมเฉลิมฉลองวันพิเศษของเรา",
     generator: 'v0.dev'
 }

@@ -15,8 +15,6 @@ export function Gallery() {
   const images = [
     "/images/wed1.jpg?height=600&width=400",
     "/images/wed2.jpg?height=400&width=600",
-    "/images/wed3.jpg?height=600&width=400",
-    "/images/wed4.jpg?height=400&width=600",
     "/images/wed5.jpg?height=600&width=400",
     "/images/wed6.jpg?height=400&width=600",
   ]

@@ -74,7 +74,7 @@ export default function Home() {
             <Heart className="h-5 w-5 fill-current animate-pulse" />
           </div>
           <p className="text-sm opacity-80">ด้วยความรักและความกตัญญู เราตั้งตารอที่จะได้ฉลองร่วมกับคุณ!</p>
-          <p className="text-sm mt-6 opacity-70">© {new Date().getFullYear()} • งานแต่งงาน Sophia & James</p>
+          <p className="text-sm mt-6 opacity-70">© {new Date().getFullYear()} • งานแต่งงาน Sosi& Keng</p>
         </div>
       </footer>
     </main>
