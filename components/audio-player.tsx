@@ -73,9 +73,18 @@ export function AudioPlayer({ songTitle = "เพลงงานแต่งง�
 
   const togglePlay = () => {
     if (!audioLoaded) return
+    if (!audioRef.current) return
+    
+    if (audioRef.current.paused) {
+      audioRef.current.play().catch((error) => {
+        console.error("Audio playback failed:", error)
+      })
+    } else {
+      audioRef.current.pause()
+    }
+  
     setIsPlaying(!isPlaying)
   }
-
   const toggleMute = () => {
     setIsMuted(!isMuted)
   }
