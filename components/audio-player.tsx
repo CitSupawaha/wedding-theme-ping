@@ -1,47 +1,90 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import YouTube from "react-youtube"
+import { useEffect, useRef, useState } from "react"
 import { Music, Pause, Play, Volume2, VolumeX } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
 
 interface AudioPlayerProps {
   songTitle?: string
 }
 
-export function AudioPlayer({ songTitle = "รักนานๆ - โอม จรุวัฒน์" }: AudioPlayerProps) {
-  const [player, setPlayer] = useState<any>(null)
-  const [isPlaying, setIsPlaying] = useState(true) // ให้เริ่มเล่นอัตโนมัติ
-  const [isMuted, setIsMuted] = useState(true) // เริ่มต้นแบบปิดเสียง
+export function AudioPlayer({ songTitle = "เพลงงานแต่งงาน" }: AudioPlayerProps) {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [volume, setVolume] = useState(0.5)
   const [showControls, setShowControls] = useState(false)
+  const [audioLoaded, setAudioLoaded] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  const onReady = (event: any) => {
-    const ytPlayer = event.target
-    setPlayer(ytPlayer)
-    ytPlayer.mute() // ปิดเสียงก่อน เพื่อให้ autoplay ทำงาน
-    ytPlayer.playVideo() // เล่นอัตโนมัติ
-  }
+  useEffect(() => {
+    // Create audio element directly in the DOM for better browser compatibility
+    const audioElement = document.createElement("audio")
+    audioElement.src = "/audio/dome.mp3" // ควรเปลี่ยนเป็นเพลง "รักนานๆ" ของโอม จรุวัฒน์
+    audioElement.loop = true
+    audioElement.volume = volume
+    audioElement.preload = "auto"
+
+    // Add event listeners
+    audioElement.addEventListener("canplaythrough", () => {
+      setAudioLoaded(true)
+    })
+
+    audioElement.addEventListener("error", (e) => {
+      console.error("Audio error:", e)
+      console.error("Audio error code:", audioElement.error?.code)
+      console.error("Audio error message:", audioElement.error?.message)
+    })
+
+    audioRef.current = audioElement
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.remove()
+        audioRef.current = null
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!audioRef.current || !audioLoaded) return
+
+    if (isPlaying) {
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.error("Audio playback failed:", error)
+          setIsPlaying(false)
+        })
+      }
+    } else {
+      audioRef.current.pause()
+    }
+  }, [isPlaying, audioLoaded])
+
+  useEffect(() => {
+    if (!audioRef.current) return
+
+    audioRef.current.volume = isMuted ? 0 : volume
+  }, [volume, isMuted])
 
   const togglePlay = () => {
-    if (!player) return
-    if (isPlaying) {
-      player.pauseVideo()
-    } else {
-      player.playVideo()
-    }
+    if (!audioLoaded) return
     setIsPlaying(!isPlaying)
   }
 
   const toggleMute = () => {
-    if (!player) return
-    if (isMuted) {
-      player.unMute()
-    } else {
-      player.mute()
-    }
     setIsMuted(!isMuted)
+  }
+
+  const handleVolumeChange = (value: number[]) => {
+    setVolume(value[0])
+    if (value[0] > 0 && isMuted) {
+      setIsMuted(false)
+    }
   }
 
   return (
@@ -66,26 +109,25 @@ export function AudioPlayer({ songTitle = "รักนานๆ - โอม จ
               className="absolute bottom-0 right-12 bg-white/90 backdrop-blur-sm rounded-lg shadow-md p-3 flex flex-col gap-2"
             >
               <div className="text-sm font-medium text-center mb-1 text-primary">{songTitle}</div>
-              <YouTube
-                videoId="EiafYKXJdWA" // เปลี่ยนเป็น ID ของเพลง "รักนานๆ - โอม จรุวัฒน์"
-                opts={{
-                  playerVars: {
-                    autoplay: 1, // ให้เล่นอัตโนมัติ
-                    mute: 1, // ปิดเสียงเริ่มต้น (จำเป็นเพื่อให้ autoplay ทำงาน)
-                    loop: 1,
-                    playlist: "EiafYKXJdWA",
-                  },
-                }}
-                onReady={onReady}
-              />
-              <div className="flex items-center gap-2 mt-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={togglePlay}>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={togglePlay} disabled={!audioLoaded}>
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
 
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleMute}>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleMute} disabled={!audioLoaded}>
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </Button>
+
+                <div className="w-24">
+                  <Slider
+                    value={[volume]}
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    onValueChange={handleVolumeChange}
+                    disabled={!audioLoaded}
+                  />
+                </div>
               </div>
             </motion.div>
           )}
@@ -94,3 +136,4 @@ export function AudioPlayer({ songTitle = "รักนานๆ - โอม จ
     </div>
   )
 }
+
